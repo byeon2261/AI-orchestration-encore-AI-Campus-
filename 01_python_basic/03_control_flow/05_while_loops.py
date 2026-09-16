@@ -33,7 +33,7 @@ while attempt < max_attempts:
         found = True
         print(f"{attempt}번째 시도: {guess}를 선택하셨습니다. 정답")
         break
-    ## elif를 사용할 필요가 없다.
+    ### elif를 사용할 필요가 없다.
     elif guess != secret_number:
         print(f"{attempt}번째 시도: {guess}를 선택하셨습니다. 오답. 남은 기회는 {max_attempts - attempt}번입니다.")
 
