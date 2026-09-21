@@ -1,6 +1,6 @@
 from typing import Annotated
 from enum import StrEnum
-from fastapi import FastAPI, Body, HTTPException, Query, status
+from fastapi import FastAPI, Body, HTTPException, Path, Query, status
 
 # StrEnum은 문자열처럼 사용할 수 있는 상태값을 미리 정해둔다.
 class TaskState(StrEnum):
@@ -26,3 +26,12 @@ def list_tasks(
 ) -> dict:
     tasks = TASKS if state is None else [task for task in TASKS if task["state"] == state]
     return {"items": tasks[:limit], "total": len(tasks)}
+
+@app.get("/tasks/{task_id}")
+def read_task(task_id: Annotated[int, Path(ge=1)]) -> dict:
+    """주소의  ID와 일치하는 할 일 하나를 반환한다."""
+    # next는 첫 일치 항목을 찾고, 없으면 None을 반환한다.
+    task = next((task for task in TASKS if task ["id"] == task_id), None)
+    if task is None:
+        raise HTTPException(status_code=404, detail="할 일을 찾을 수 없다.")
+    return task
