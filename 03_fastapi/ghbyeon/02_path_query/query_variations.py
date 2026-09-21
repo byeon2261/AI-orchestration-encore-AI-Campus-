@@ -25,15 +25,15 @@ def list_tasks(
     return {"keyword": keyword, "items": matched[:limit], "total": len(matched)}
 
 # GET '/search' 요청 시 keyword:str 쿼리 매개변수 전달
-# 단, 검색어는 반드시 전달 되어야 함(min_length=2설정으로 처리)
+# 단, 검색어는 반드시 전달 되어야 함(min_length=2 설정으로 처리)
 @app.get("/search")
 def search_tasks(
-    keyword: Annotated[str, Query(description="제목에서 찾을 문자열", min_length=2)] = None,
-    limit: Annotated[int, Query(ge=1, le=5)] = 3,
+    keyword: Annotated[str, Query(min_length=2)],
 ) -> dict:
-    # if len(keyword) <2:
-    #     raise HTTPException(status_code=422, detail="검색어가 2개 이상")
-    matched = {
-        tasks for tasks in TASKS if keyword.casefold in TASKS["title"].casefold
-    }
-    return {"keyword": keyword, "items": matched[:limit], "total": len(matched)}
+    """반드시 보내야 하는 검색어를 읽는다."""
+    matched = [task for task in TASKS if keyword.casefold() in task["title"].casefold()]
+    return {"keyword": keyword, "items": matched, "total": len(matched)}
+
+@app.get("/options")
+def read_options(verbose: bool = False) -> dict:
+    return {"verbose": verbose}
