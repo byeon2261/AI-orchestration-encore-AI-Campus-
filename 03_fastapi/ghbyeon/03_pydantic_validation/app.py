@@ -20,6 +20,15 @@ class RunCreate(BaseModel):
     tags: list[str] = Field(default_factory=list, max_length=5)
     timeout_seconds: int = Field(default=30, ge=1, le=120)
 
+    @field_validator("tags")
+    def normalize_tags(tags: list[str]) -> list[str]:
+        """빈 태그를 빼고 공백/대소문자/중복을 정리한다."""
+        normalized: list[str] = []
+        for tag in tags:
+            cleaned = tag.strip().casefold()
+            if cleaned and cleaned not in normalized:
+                normalized.append(cleaned)
+        return normalized
 
 @app.post("/runs", status_code=status.HTTP_201_CREATED)
 def create_run(
