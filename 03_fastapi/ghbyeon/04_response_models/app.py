@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Literal
 
@@ -82,6 +82,11 @@ def list_runs() -> dict:
     """저장 된 실행의 짧은 목록과 개수를 보여준다."""
     return {"items": list(INTERNAL_RUNS.values()), "total": len(INTERNAL_RUNS)}
 
-@app.get("/runs/{runs_id}")
+@app.get("/runs/{run_id}", response_model=RunPublic)
 def read_run(run_id: int) -> dict:
     """번호로 한 실행을 찾고, 없으면 404로 알린다."""
+    run = INTERNAL_RUNS.get(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="실행 기록을 찾을 수 없습니다.")
+    return run
+
