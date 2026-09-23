@@ -58,7 +58,12 @@ def task_title_conflict_exception(
     _request: Request,
     error: TaskTitleConflictException
 ) -> JSONResponse:
-    pass
+    body = ErrorResponse(
+        error= "task_title_conflict",
+        message= f"작업 {error.title}은 작업은 이미 등록되어 있다."
+    )
+    return JSONResponse(status_code=status.HTTP_409_CONFLICT, content=body.model_dump())
+
 
 
 @app.get("/tasks/{task_id}", response_model=TaskResponse)
@@ -77,7 +82,7 @@ def read_task(task_id: int) -> dict[str, object]:
 def create_task(task_create: TaskCreate) -> dict[str, object]:
     normalized_title = task_create.title.casefold()
     if any(str(task["title"]).casefold() == normalized_title for task in TASKS.values()):
-        pass
+        raise TaskTitleConflictException(task_create.title)
 
     task_id = max(TASKS, default=0) + 1
     task = {"id": task_id, "title": task_create.title, "status": "todo"}
