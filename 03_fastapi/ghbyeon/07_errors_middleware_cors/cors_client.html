@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CORS 확인 클라이언트</title>
+    <style>
+      body { max-width: 760px; margin: 48px auto; padding: 0 20px; font-family: sans-serif; color: #172033; }
+      .panel { padding: 24px; border: 1px solid #cbd5e1; border-radius: 16px; background: #f8fafc; }
+      input { width: 240px; padding: 10px; border: 1px solid #94a3b8; border-radius: 8px; }
+      button { margin: 12px 8px 0 0; padding: 10px 14px; border: 0; border-radius: 8px; color: white; background: #2563eb; cursor: pointer; }
+      pre { min-height: 180px; overflow: auto; padding: 16px; border-radius: 12px; color: #e2e8f0; background: #0f172a; white-space: pre-wrap; }
+      code { color: #7c3aed; }
+    </style>
+  </head>
+  <body>
+    <h1>CORS 요청 확인</h1>
+    <p>현재 페이지의 Origin은 <code id="origin"></code>이다.</p>
+    <div class="panel">
+      <label for="path">API 경로</label>
+      <input id="path" value="/tasks/1" />
+      <div>
+        <button id="simple">단순 GET</button>
+        <button id="preflight">사용자 정의 헤더 GET</button>
+      </div>
+    </div>
+    <h2>결과</h2>
+    <pre id="result">버튼을 누르면 상태 코드, 공개 응답 헤더와 본문이 표시된다.</pre>
+
+    <script>
+      const API_ORIGIN = "http://127.0.0.1:8000";
+      const result = document.querySelector("#result");
+      const pathInput = document.querySelector("#path");
+      document.querySelector("#origin").textContent = window.location.origin;
+
+      async function requestApi(useCustomHeader) {
+        const headers = useCustomHeader ? { "X-Request-ID": "browser-demo" } : {};
+        const url = `${API_ORIGIN}${pathInput.value}`;
+        result.textContent = `${url} 요청 중...`;
+
+        try {
+          const response = await fetch(url, { headers });
+          const body = await response.json();
+          result.textContent = JSON.stringify(
+            {
+              status: response.status,
+              requestId: response.headers.get("X-Request-ID"),
+              processTimeMs: response.headers.get("X-Process-Time-Ms"),
+              body,
+            },
+            null,
+            2,
+          );
+        } catch (error) {
+          result.textContent = `브라우저가 응답 사용을 차단했다.\n${error}`;
+        }
+      }
+
+      document.querySelector("#simple").addEventListener("click", () => requestApi(false));
+      document.querySelector("#preflight").addEventListener("click", () => requestApi(true));
+    </script>
+  </body>
+</html>

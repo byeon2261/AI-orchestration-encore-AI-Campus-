@@ -165,6 +165,24 @@ async def add_request_context(request: Request, call_next):
     return response
 
 
+# add_middleware()는 기존 경로함수를 코치지 않고 CORS공통 처리를 앱에 추가한다.
+# 브라우져가 보내는 preflight도 CORSMiddlewate가 자동으로 응답한다.
+app.add_middleware(
+    CORSMiddleware,
+    # 이 Origin에서 열린 브라우져 페이지의 교차 출처 요청만 허용한다.
+    allow_origins=["http://127.0.0.1:18000"],
+    # 쿠기/Authentication 같은 자격증명은 이 예제에서 사용하지 않는다.
+    allow_credentials=False,
+    # 브라우져가 실제 요청에 사용할 수 있는 HTTP 메서드다.
+    allow_methods=["GET", "POST"],
+    # 브라우져가 실제 요청에 사용할 수 있는 header이다.
+    allow_headers=["Content-Type", "X-Request-ID"],
+    # 응답 할 수 있도록 허용할 헤더이다.
+    expose_headers=["X-Request-ID", "X-Process-Time-Ms"]
+)
+
+
+
 @app.get("/tasks/{task_id}", response_model=TaskResponse)
 def read_task(task_id: int) -> dict[str, object]:
     task = TASKS.get(task_id)
